@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Strength Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+    <p></p>
+    <p></p>
+    <main class="page-shell">
+        <section class="hero-panel">
+            <div class="hero-copy">
+                <h1>Password Strength Checker</h1>
+                <p>Type a password below to evaluate its security instantly.</p>
+            </div>
+
+            <form id="password-form" class="checker-form" autocomplete="off">
+                <label for="password-input">Enter your password</label>
+                <input id="password-input" name="password" type="password" placeholder="e.g. CorrectHorseBatteryStaple" />
+                <button type="submit">Check strength</button>
+            </form>
+
+            <div id="result-card" class="result-card hidden">
+                <div class="result-header">
+                    <h2>Analysis Result</h2>
+                    <span id="strength-badge" class="badge">--</span>
+                </div>
+                <div class="result-detail">
+                    <strong>Entropy:</strong> <span id="entropy-value">0.0</span> bits
+                </div>
+                <div class="suggestions">
+                    <strong>Suggestions</strong>
+                    <ul id="suggestions-list"></ul>
+                </div>
+            </div>
+
+            <div id="message" class="message"></div>
+        </section>
+    </main>
+
+    <script>
+        const form = document.getElementById('password-form');
+        const message = document.getElementById('message');
+        const resultCard = document.getElementById('result-card');
+        const strengthBadge = document.getElementById('strength-badge');
+        const entropyValue = document.getElementById('entropy-value');
+        const suggestionsList = document.getElementById('suggestions-list');
+
+        function showError(text) {
+            message.textContent = text;
+            message.classList.add('message-error');
+            resultCard.classList.add('hidden');
+        }
+
+        function showResult(data) {
+            message.textContent = '';
+            message.classList.remove('message-error');
+            resultCard.classList.remove('hidden');
+            strengthBadge.textContent = data.strength;
+            strengthBadge.dataset.strength = data.strength.toLowerCase().replace(' ', '-');
+            entropyValue.textContent = data.entropy.toFixed(1);
+            suggestionsList.innerHTML = data.suggestions.map(item => `<li>${item}</li>`).join('');
+        }
+
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const password = document.getElementById('password-input').value.trim();
+            if (!password) {
+                showError('Please type a password before checking.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    showError(data.error || 'Unable to analyse password.');
+                    return;
+                }
+
+                showResult(data);
+            } catch (error) {
+                showError('Unable to connect with the checker backend.');
+                console.error(error);
+            }
+        });
+    </script>
+    <footer class="footer">
+        <p>Created by victor </p>
+    </footer>
+</body>
+</html>
