@@ -1,3 +1,4 @@
+<img width="1888" height="939" alt="Screenshot 2026-06-03 134948" src="https://github.com/user-attachments/assets/58faf165-cd31-413b-807c-c3d98f9e996d" />
 Password Strength Checker
 
 A simple Flask web interface that connects to the existing password_strength_checker.py script to evaluate password strength and provide feedback.
